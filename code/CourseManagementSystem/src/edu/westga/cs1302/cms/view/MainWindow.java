@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
@@ -15,6 +16,9 @@ import javafx.scene.control.TextField;
  * @version Fall 2024
  */
 public class MainWindow {
+	
+	@FXML
+	private Label courseAverage;
 	@FXML
 	private TextField name;
 	@FXML
@@ -63,44 +67,78 @@ public class MainWindow {
 
 	@FXML
 	void changeGrade(ActionEvent event) {
-	    Student selectedStudent = this.students.getSelectionModel().getSelectedItem();
-	    if (selectedStudent != null) {
-	        try {
-	            int newGrade = Integer.parseInt(this.gradeTextField.getText());
-	            selectedStudent.setGrade(newGrade);
-	            this.gradeTextField.clear();
-	            this.students.refresh();
-	        } catch (NumberFormatException ex) {
-	            Alert errorPopup = new Alert(Alert.AlertType.ERROR);
-	            errorPopup.setContentText("Invalid grade. Please enter a valid number.");
-	            errorPopup.showAndWait();
-	            this.grade.clear();
-	        } catch (IllegalArgumentException go) {
-	        	Alert errorPopup = new Alert(Alert.AlertType.ERROR);
-	            errorPopup.setContentText(go.getMessage());
-	            errorPopup.showAndWait();
-	            this.grade.clear();
-	        }
-	    }
+		Student selectedStudent = this.students.getSelectionModel().getSelectedItem();
+		if (selectedStudent != null) {
+			try {
+				int newGrade = Integer.parseInt(this.gradeTextField.getText());
+				selectedStudent.setGrade(newGrade);
+				this.gradeTextField.clear();
+				this.students.refresh();
+			} catch (NumberFormatException ex) {
+				Alert errorPopup = new Alert(Alert.AlertType.ERROR);
+				errorPopup.setContentText("Invalid grade. Please enter a valid number.");
+				errorPopup.showAndWait();
+				this.grade.clear();
+			} catch (IllegalArgumentException go) {
+				Alert errorPopup = new Alert(Alert.AlertType.ERROR);
+				errorPopup.setContentText(go.getMessage());
+				errorPopup.showAndWait();
+				this.grade.clear();
+			}
+		}
 	}
 
-    @FXML
-    void initialize() {
-    	 assert this.changeGradeButton != null : "fx:id=\"changeGradeButton\" was not injected: check your FXML file 'MainWindow.fxml'.";
-         assert this.grade != null : "fx:id=\"grade\" was not injected: check your FXML file 'MainWindow.fxml'.";
-         assert this.gradeTextField != null : "fx:id=\"gradeTextField\" was not injected: check your FXML file 'MainWindow.fxml'.";
-         assert this.name != null : "fx:id=\"name\" was not injected: check your FXML file 'MainWindow.fxml'.";
-         assert this.students != null : "fx:id=\"students\" was not injected: check your FXML file 'MainWindow.fxml'.";
-         this.gradeTextField.setEditable(false);
+	/**
+	 * Initialize.
+	 */
+	@FXML
+	void initialize() {
+		assert this.courseAverage != null
+				: "fx:id=\"CourseAverage\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.changeGradeButton != null
+				: "fx:id=\"changeGradeButton\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.courseAverage != null
+				: "fx:id=\"courseAverage\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.grade != null : "fx:id=\"grade\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.gradeTextField != null
+				: "fx:id=\"gradeTextField\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.name != null : "fx:id=\"name\" was not injected: check your FXML file 'MainWindow.fxml'.";
+		assert this.students != null : "fx:id=\"students\" was not injected: check your FXML file 'MainWindow.fxml'.";
 
-        this.students.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {  
-             this.gradeTextField.setEditable(true);
-            } else {
-             this.gradeTextField.setEditable(false);
-            }
-        });
-		
+		this.courseAverage.setText("0");
+
+		this.students.getItems()
+				.addListener((javafx.collections.ListChangeListener.Change<? extends Student> change) -> {
+					this.updateClassAverage();
+				});
+
+		this.students.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				this.gradeTextField.setEditable(true);
+			} else {
+				this.gradeTextField.setEditable(false);
+			}
+		});
+
 	}
 
+	/**calculates and updates the class average
+	 * 
+	 */
+	public void updateClassAverage() {
+		double total = 0;
+		int studentCount = this.students.getItems().size();
+
+		if (studentCount > 0) {
+			for (Student student : this.students.getItems()) {
+				total += student.getGrade();
+			}
+			double avg = total / studentCount;
+
+			this.courseAverage.setText(String.format("Class Average: %.2f", avg));
+		} else {
+
+			this.courseAverage.setText("Class Average: N/A");
+		}
+	}
 }

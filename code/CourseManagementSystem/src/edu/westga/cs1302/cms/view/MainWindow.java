@@ -9,28 +9,44 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
+// TODO: Auto-generated Javadoc
 /**
- * Code behind for the MainWindow of the application
- * 
+ * Code behind for the MainWindow of the application.
+ *
  * @author CS 1302
  * @version Fall 2024
  */
 public class MainWindow {
 	
+	/** The course average. */
 	@FXML
 	private Label courseAverage;
+	
+	/** The name. */
 	@FXML
 	private TextField name;
+	
+	/** The grade. */
 	@FXML
 	private TextField grade;
+	
+	/** The students. */
 	@FXML
 	private ListView<Student> students;
 
+	/** The grade text field. */
 	@FXML
 	private TextField gradeTextField;
+	
+	/** The change grade button. */
 	@FXML
 	private Button changeGradeButton;
 
+	/**
+	 * Adds the student.
+	 *
+	 * @param event the event
+	 */
 	@FXML
 	void addStudent(ActionEvent event) {
 		String studentName = this.name.getText();
@@ -53,6 +69,11 @@ public class MainWindow {
 		}
 	}
 
+	/**
+	 * Removes the student.
+	 *
+	 * @param event the event
+	 */
 	@FXML
 	void removeStudent(ActionEvent event) {
 		Student student = this.students.getSelectionModel().getSelectedItem();
@@ -65,6 +86,11 @@ public class MainWindow {
 		}
 	}
 
+	/**
+	 * Change grade.
+	 *
+	 * @param event the event
+	 */
 	@FXML
 	void changeGrade(ActionEvent event) {
 		Student selectedStudent = this.students.getSelectionModel().getSelectedItem();
@@ -72,6 +98,7 @@ public class MainWindow {
 			try {
 				int newGrade = Integer.parseInt(this.gradeTextField.getText());
 				selectedStudent.setGrade(newGrade);
+				this.updateClassAverageLabel();
 				this.gradeTextField.clear();
 				this.students.refresh();
 			} catch (NumberFormatException ex) {
@@ -105,11 +132,11 @@ public class MainWindow {
 		assert this.name != null : "fx:id=\"name\" was not injected: check your FXML file 'MainWindow.fxml'.";
 		assert this.students != null : "fx:id=\"students\" was not injected: check your FXML file 'MainWindow.fxml'.";
 
-		this.courseAverage.setText("0");
+		this.courseAverage.setText("N/A");
 
 		this.students.getItems()
 				.addListener((javafx.collections.ListChangeListener.Change<? extends Student> change) -> {
-					this.updateClassAverage();
+					this.updateClassAverageLabel();
 				});
 
 		this.students.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -122,23 +149,35 @@ public class MainWindow {
 
 	}
 
-	/**calculates and updates the class average
-	 * 
+	/**
+	 * Calculate class average.
+	 *
+	 * @return the double and -1 if nothing is in the list
 	 */
-	public void updateClassAverage() {
-		double total = 0;
-		int studentCount = this.students.getItems().size();
+	public double calculateClassAverage() {
+	    double total = 0;
+	    int studentCount = this.students.getItems().size();
 
-		if (studentCount > 0) {
-			for (Student student : this.students.getItems()) {
-				total += student.getGrade();
-			}
-			double avg = total / studentCount;
+	    if (studentCount > 0) {
+	        for (Student student : this.students.getItems()) {
+	            total += student.getGrade();
+	        }
+	        return total / studentCount;  
+	    } else {
+	        return -1; 
+	    }
+	}
 
-			this.courseAverage.setText(String.format("Class Average: %.2f", avg));
-		} else {
+	/**
+	 * Update class average label.
+	 */
+	public void updateClassAverageLabel() {
+	    double avg = this.calculateClassAverage(); 
 
-			this.courseAverage.setText("Class Average: N/A");
-		}
+	    if (avg != -1) {
+	        this.courseAverage.setText(String.format("Class Average: %.2f", avg));
+	    } else {
+	        this.courseAverage.setText("Class Average: N/A");
+	    }
 	}
 }
